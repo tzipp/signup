@@ -38,7 +38,18 @@ class SignupHandler(Handler):
         verify = self.request.get('verify')
         email = self.request.get('email')
 
-        self.render('post.html', username=username, password=password, verify=verify, email=email)
+        if not valid_username(username):
+            self.render('signup.html')
+        
+        else:
+            return self.redirect('/welcome?username=%s' % username)
+
+class SuccessHandler(Handler):
+    def get(self):
+        username = self.request.GET['username']
+        self.render('welcome.html', username=username)
 
 
-app = webapp2.WSGIApplication([('/signup', SignupHandler)], debug=True)
+app = webapp2.WSGIApplication([('/signup', SignupHandler),
+                               ('/welcome', SuccessHandler),
+    ], debug=True)
