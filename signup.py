@@ -12,16 +12,19 @@ class Handler(webapp2.RequestHandler):
     def write(self, *args, **kwargs):
         self.response.out.write(*args, **kwargs)
 
+    ## jinja2's Template objects render with either a dictionary or kwargs
+    ## this is the 'context' of the template
     def render_to_string(self, template, **kw):
         t = jinja_env.get_template(template)
-        return (t, kw)
+        return t.render(**kw)
 
+    ## not to be confused with jinja2's render method... 
     def render(self, template, **kw):
         self.write(self.render_to_string(template, **kw))
 
 class SignupHandler(Handler):
     def get(self):
-        self.response.out.write("What's up!")
+        self.render('signup.html')
 
     def post(self):
         self.response.out.write("Posteddd")
