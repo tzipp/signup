@@ -23,10 +23,24 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_to_string(template, **kw))
 
-
+# Verification functions for the signup
+# Return boolean values context to render error messages
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 def valid_username(username):
     return USER_RE.match(username)
+
+PASS_RE = re.compile(r"^.{3,20}$")
+def valid_password(password):
+    return PASS_RE.match(password)
+
+def valid_email(email):
+    return None
+
+def passwords_match(password, verify):
+    if password != verify:
+        return False
+    else:
+        return True
 
 class SignupHandler(Handler):
     def get(self):
@@ -40,7 +54,16 @@ class SignupHandler(Handler):
 
         if not valid_username(username):
             self.render('signup.html')
+
+        elif not valid_password(password):
+            self.render('signup.html')
+
+        elif not passwords_match(password, verify):
+            self.response.out.write("password mismatch")
+            self.render('signup.html')
         
+        ## Really neat! Check out the redirect vs. the routing
+        ## and think back to how HTTP works
         else:
             return self.redirect('/welcome?username=%s' % username)
 
