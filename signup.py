@@ -33,8 +33,9 @@ PASS_RE = re.compile(r"^.{3,20}$")
 def valid_password(password):
     return PASS_RE.match(password)
 
+EMAIL_RE =re.compile(r"^[\S]+@[\S]+\.[\S]+")
 def valid_email(email):
-    return None
+    return EMAIL_RE.match(email)
 
 def passwords_match(password, verify):
     if password != verify:
@@ -52,19 +53,20 @@ class SignupHandler(Handler):
         verify = self.request.get('verify')
         email = self.request.get('email')
 
+        errors = {}
         if not valid_username(username):
-            self.render('signup.html')
+            errors['username_error'] = "Error: That's not a valid username."
+        if not valid_password(password):
+            errors['password_error'] = "That wasn't a valid password."
+        if not passwords_match(password, verify):
+            errors['passwords_mismatch_error'] = "Your passwords didn't match."
+        if email:
+            if not valid_email(email):
+                errors['email_error'] = "That's not a valid email."
 
-        elif not valid_password(password):
-            self.render('signup.html')
+        self.render('signup.html', username=username, **errors)
 
-        elif not passwords_match(password, verify):
-            self.response.out.write("password mismatch")
-            self.render('signup.html')
-        
-        ## Really neat! Check out the redirect vs. the routing
-        ## and think back to how HTTP works
-        else:
+        if not errors:
             return self.redirect('/welcome?username=%s' % username)
 
 class SuccessHandler(Handler):
